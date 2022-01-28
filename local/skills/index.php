@@ -200,5 +200,10 @@ if ($sub_skill_mform->is_cancelled()) {
       </div>
    </div>
 </div>
+<style type="text/css">
+   #region-main, .card, .list-group ul li a, #course-category-listings.columns-3 {
+    height: auto !important;
+}
+</style>
 <?php
 echo $OUTPUT->footer();

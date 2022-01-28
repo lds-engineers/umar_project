@@ -1,48 +1,8 @@
 <?php require_once("../../config.php");
 echo $OUTPUT->header();
-
+include("common_css.php");
 ?>
-<style type="text/css">
-   /* Toggle hide/show - no Js
-        --------------------------------*/
-        .toggle-box-region {background-color:#fff; border:1px solid #d9d9d9; padding:16px 18px;}
-        .toggle-box {display:none;}
-        .toggle-box + label {
-            color:#555;
-            cursor:pointer;
-            display:block;
-            font-weight:bold;
-            line-height:23px;
-            padding:.3em 0 .3em 26px;
-            position:relative;
-        }
 
-        .toggle-box + label + div {display:none; margin:0 0 14px;}
-        .toggle-box:checked + label:nth-child(n) + div {display:block;}
-
-        .toggle-box + label:before {
-            position:absolute;
-            content:"\f0fe";
-            font-family:FontAwesome;
-            top:.3em;
-            left:0px;
-            color:#0085a6;
-        }
-        .toggle-box:checked + label {color:#0085a6;}
-        .toggle-box:checked + label:before {content:"\f146";}
-        .toggle-box-content {border-bottom:1px double #bfbfbf; color:#000; padding:2px 1em .6em 28px;}
-
-        /* General */
-        *, *:before, *:after {
-            -webkit-box-sizing: border-box;
-               -moz-box-sizing: border-box;
-                    box-sizing: border-box;
-        }
-
-        .box-test {
-          padding:3em;
-        }
-</style>
 <div class="container-flow">
    <div class="row">
       <div class="col-sm-12">
@@ -58,7 +18,7 @@ echo $OUTPUT->header();
                               <select class="form-control" id="course" name="course">
                                  <option value="">Select one</option>
                                   <?php 
-                                    $courses = $DB->get_records_sql("SELECT DISTINCT {course_skill}.course_id,{course}.fullname,{course}.id FROM {course} INNER JOIN {course_skill} ON {course}.id = {course_skill}.course_id");
+                                    $courses = $DB->get_records_sql("SELECT DISTINCT {skill_weightage}.default_course,{course}.fullname,{course}.id FROM {course} INNER JOIN {skill_weightage} ON {course}.id = {skill_weightage}.default_course");
                                     
                                     foreach($courses as $course){
                                  ?>

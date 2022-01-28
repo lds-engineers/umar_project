@@ -18,6 +18,9 @@ if($_POST){       //Access post data
       $dataObj->user_id = $_POST['user'];
       $dataObj->skill_id = $_POST['skill'];
       $dataObj->skill_proficiency_label = $_POST['skill_proficiency_label'];
+      $dataObj->createdby=$USER->id;
+      $dataObj->createddate=time();
+      $dataObj->skill_weightage_id=$_POST['weightage_id'];
 		$dataObj->id = $DB->insert_record('assign_skill',$dataObj); // Insert skill data in (mdl_assign_skill) table
 		$assign_skill_id = $dataObj->id;
 		if ($assign_skill_id) {
@@ -37,11 +40,15 @@ if($_POST){       //Access post data
 			redirect(new moodle_url("/local/skills/assignskill.php"), "Something wrong", null, \core\output\notification::NOTIFY_ERROR);
 		}
 	}elseif($_POST['flg']=='update_assign_Skill'){
+		global $USER;
 		$skill_id = $_POST['skill'];
 		$skill_proficiency_label  = $_POST['skill_proficiency_label'];
 		$user_id = $_POST['user'];
+		$weightage_id=$_POST['weightage_id'];
+		$modifiedby=$USER->id;
+		$modifieddate=time();
 		
-		$DB->execute("UPDATE {assign_skill} SET skill_proficiency_label = '{$skill_proficiency_label}' WHERE skill_id = $skill_id AND user_id = $user_id");			
+		$DB->execute("UPDATE {assign_skill} SET skill_proficiency_label = '{$skill_proficiency_label}',skill_weightage_id={$weightage_id},modifiedby={$modifiedby}, modifieddate='{$modifieddate}' WHERE skill_id = $skill_id AND user_id = $user_id");			
 		for ($j=0; $j <count($_POST['sub_skill_id']) ; $j++) { 
 			$sub_skills_data = $_POST['sub_skill_id'][$j];
 			$pre_skills_data = $_POST['proficiency_level'][$j];
@@ -138,16 +145,19 @@ if($_POST){       //Access post data
 			}
 		}
 		redirect(new moodle_url("/local/skills/skill_quiz_mapping.php"), "update skill quiz mapping Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
-	}elseif($_POST['flg']=='add_skill_weightage'){  //Add skill weightage
+	}elseif($_GET['flg']=='add_skill_weightage'){
+
+	  //Add skill weightage
 		if ($_POST['skill_proficiency']) {
 			$skill_id = $_POST['skill'];
 			$skill_proficiency = $_POST['skill_proficiency'];
 			$default_course = $_POST['default_course'];
+			$certificate_course=$_POST['skill_certificate_course'];
 			$skill_weit = new stdClass();
 			$skill_weit->skill_id = $skill_id;
 			$skill_weit->skill_proficiency = $skill_proficiency;
 			$skill_weit->default_course = $default_course;
-
+			$skill_weit->certificate_course=$certificate_course;
 			$skill_weit->id = $DB->insert_record('skill_weightage',$skill_weit);
 			$inserted_id = $skill_weit->id; // inserted id 
 		   
@@ -164,22 +174,40 @@ if($_POST){       //Access post data
 				   $skill_weit_meta->id = $DB->insert_record('skill_weightage_meta',$skill_weit_meta);
 				}
 				if($skill_weit_meta->id){
-			     redirect(new moodle_url("/local/skills/skill_weightage.php"), "Add  Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
+					$msg['status']=true;
+					$msg['msg']="Added Successfully";
+					echo json_encode($msg);
+					die;
+			    // redirect(new moodle_url("/local/skills/skill_weightage.php"), "Add  Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
 				}else{
-			     redirect(new moodle_url("/local/skills/skill_weightage.php"), "Something Wrong", null, \core\output\notification::NOTIFY_ERROR);
+					$msg['status']=false;
+					$msg['msg']="Something wrong";
+					echo json_encode($msg);
+			     //redirect(new moodle_url("/local/skills/skill_weightage.php"), "Something Wrong", null, \core\output\notification::NOTIFY_ERROR);
 				}
 			}
 		}
 		else{
-			redirect(new moodle_url("/local/skills/skill_weightage.php"), "please select skill and skill proficiency_level", null, \core\output\notification::NOTIFY_ERROR);
+			$msg['status']=false;
+					$msg['msg']="Something wrong";
+					echo json_encode($msg);
+			//redirect(new moodle_url("/local/skills/skill_weightage.php"), "please select skill and skill proficiency_level", null, \core\output\notification::NOTIFY_ERROR);
 		}
-   }elseif($_POST['flg']=='update_skill_weightage'){   // upadte skill weightage
+   }elseif($_GET['flg']=='update_skill_weightage'){
+
+      // upadte skill weightage
 		if ($_POST['update_skill_proficiency']) {
+			$certificate_course=$_POST['skill_certificate_course'];
+			/*echo "<pre>";
+			print_r($_POST);
+			echo "</pre>";
+			die;*/
+			$default_course = $_POST['default_course'];
       	for ($k=0; $k <count($_POST['skill_wetg_id']); $k++){ 
 				$default_course = $_POST['default_course'];
 				$skill_wetg_id = $_POST['skill_wetg_id'][$k];
 				$skill_proficiency = $_POST['update_skill_proficiency'][$k];
-				$DB->execute("UPDATE {skill_weightage} SET skill_proficiency = '{$skill_proficiency}',default_course = '{$default_course}' WHERE id = $skill_wetg_id");
+				$DB->execute("UPDATE {skill_weightage} SET skill_proficiency = '{$skill_proficiency}',default_course = '{$default_course}',certificate_course = '{$certificate_course}' WHERE id = $skill_wetg_id");
 
 				$update_sub_skill_id_data = 'update_sub_skill_id'.$skill_wetg_id;
 				$update_sub_skill_proficiency_data = 'update_sub_skill_proficiency'.$skill_wetg_id;
@@ -191,10 +219,57 @@ if($_POST){       //Access post data
 				}
 				   
 			}
-			redirect(new moodle_url("/local/skills/skill_weightage.php"), "Update Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
+			//redirect(new moodle_url("/local/skills/skill_weightage.php"), "Updated Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
+			$msg['status']=true;
+			$msg['msg']="Updated Successfull";
+			echo json_encode($msg);
+			die;
 		}
 		else{
-			redirect(new moodle_url("/local/skills/skill_weightage.php"), "Something wrong", null, \core\output\notification::NOTIFY_ERROR);
+			//redirect(new moodle_url("/local/skills/skill_weightage.php"), "Something wrong", null, \core\output\notification::NOTIFY_ERROR);
+			$msg['status']=false;
+			$msg['msg']="Something wrong";
+			echo json_encode($msg);
+			die;
+		}
+   }elseif($_POST['flg']=='assign_course_to_sub_skill'){  //Add course to sub skill
+   	// 
+		if ($_POST['course']) {
+			$course_id = $_POST['course'];
+			
+			for ($i=0; $i <count($_POST['sub_skill_id']) ; $i++){ 
+				$objdata = new stdClass();
+				$objdata->course_id  = $course_id;
+				$objdata->sub_skill_id = $_POST['sub_skill_id'][$i];
+				$objdata->proficiency_id = $_POST['proficiency_id'][$i];
+
+			
+		
+			   $objdata->id = $DB->insert_record('assign_course_sub_skill',$objdata);
+			}
+			if($objdata->id){
+		     redirect(new moodle_url("/local/skills/assign_course_sub_skill.php"), "Add  Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
+			}else{
+		     redirect(new moodle_url("/local/skills/assign_course_sub_skill.php"), "Something Wrong", null, \core\output\notification::NOTIFY_ERROR);
+			}
+		}
+		else{
+			redirect(new moodle_url("/local/skills/skill_weightage.php"), "please select skill and skill proficiency_level", null, \core\output\notification::NOTIFY_ERROR);
+		}
+   }elseif($_POST['flg']=='update_course_to_sub_skill'){  //Upadte course to sub skill
+   	
+		if ($_POST['update_course']) {
+			$course_id = $_POST['update_course'];
+			for ($i=0; $i <count($_POST['update_sub_skill_id']) ; $i++){ 
+				
+				$update_course_id  = $course_id;
+				$update_sub_skill_id = $_POST['update_sub_skill_id'][$i];
+				$update_proficiency_id = $_POST['update_proficiency_id'][$i];
+
+		 		$updatedata->id = $DB->execute("UPDATE {assign_course_sub_skill} SET course_id = '{$update_course_id}',proficiency_id = '{$update_proficiency_id}' WHERE course_id = $course_id AND sub_skill_id = $update_sub_skill_id");
+			}
+		
+		   redirect(new moodle_url("/local/skills/assign_course_sub_skill.php"), "Update  Successfull", null, \core\output\notification::NOTIFY_SUCCESS); 
 		}
    }elseif($_POST['flg']=='learning_path_submit'){
 
@@ -236,12 +311,14 @@ if($_POST){       //Access post data
    }
 }
 if($_GET){
-	$id = $_GET['id'];
+	
 	if ($_GET['flg']=='delete1') {  // For delete skill record
+		$id = $_GET['id'];
 	    $DB->execute("DELETE FROM {skill} WHERE id = '".$id."'");
       	redirect(new moodle_url("/local/skills/index.php"), "Deleted Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
       
    }elseif($_GET['flg']=='delete2'){ //For delete sub skill list   
+   	$id = $_GET['id'];
    	$DB->execute("DELETE FROM {sub_skill} WHERE id = '".$id."'");
       	redirect(new moodle_url("/local/skills/index.php"), "Deleted Successfull", null, \core\output\notification::NOTIFY_SUCCESS);
       
@@ -425,7 +502,7 @@ if($_GET){
    		$user_id = $_GET['user_id'];
 	      $skills = $DB->get_record_sql("SELECT * FROM {skill} WHERE id = $skill_id ");
 	  
-	      $user_assign_skill_id = $DB->get_record_sql("SELECT id,skill_proficiency_label FROM {assign_skill} where skill_id = $skill_id AND user_id = $user_id");
+	      $user_assign_skill_id = $DB->get_record_sql("SELECT skill_weightage_id,id,skill_proficiency_label FROM {assign_skill} where skill_id = $skill_id AND user_id = $user_id");
       ?> 
 		   <div class="Skills">
 		   	<div class="skill_level" id="up_pro"><?=$user_assign_skill_id->skill_proficiency_label?></div>
@@ -448,6 +525,7 @@ if($_GET){
 	               </thead>
 	               <tbody>
 	               	<input type="hidden" id="skill" name="skill" value="<?=$skills->id?>">
+	               	<input type="hidden" name="weightage_id" id="updateweightage_id" value="<?php echo $user_assign_skill_id->skill_weightage_id; ?>">
 	                  <?php 
 	                     $subSkills = $DB->get_records_sql("SELECT * FROM {sub_skill} where {sub_skill}.skill_id = $skills->id");
 	                     $i=1;
@@ -800,9 +878,13 @@ if($_GET){
 				$val = array_search(max($c), $c);
              
 				if($c[$val] > 2) {
-	        		$skill_proficiencys = $DB->get_record_sql("SELECT skill_proficiency  FROM {skill_weightage} WHERE id = $val");
+	        		$skill_proficiencys = $DB->get_record_sql("SELECT id,skill_proficiency  FROM {skill_weightage} WHERE id = $val");
 	        		?>
 	        		<h5><?=$skill_proficiencys->skill_proficiency;?>
+	        		<script type="text/javascript">
+	        			document.getElementById("updateweightage_id").value = "<?php echo $skill_proficiencys->id;?>";
+	        		</script>
+	        			<input type="hidden" name="weightage_id" value="<?php echo $skill_proficiencys->id; ?>">
 	        			<input type="hidden" name="skill_proficiency_label" class="skill_proficiency" value="<?=$skill_proficiencys->skill_proficiency;?>">
 	        		</h5>
 	         <?php }
@@ -857,7 +939,78 @@ if($_GET){
       			<?php 
             } 			
          }
-	}elseif($_GET['flg']=='update_mapped_quiz_skill'){
+	}elseif($_GET['flg']=='mapped_course_skill'){ ?>
+		<input type="hidden" name="course_id" id="course_id" value="<?=$_GET['id']?>">
+		<select class="form-control" id="skill" name="skill[]" multiple>
+         <?php 
+          	$skills_ids = $DB->get_records_sql("SELECT DISTINCT skill_id FROM {skill_weightage} where default_course IN (".$_GET['id'].")");
+          	if(count($skills_ids)){
+		         foreach($skills_ids as $skills_id){
+		         	$skill_id_value[] = $skills_id->skill_id;
+		         }
+	         	$ids = implode(",",$skill_id_value);
+	         	$skills = $DB->get_records_sql("SELECT * FROM {skill} WHERE id IN (".$ids.")");
+	      	}
+		      else{
+		         $skills = $DB->get_records_sql("SELECT * FROM {skill} ");
+		      }
+            foreach($skills as $skill){ ?>
+            <option value="<?=$skill->id?>"><?=$skill->skill?></option> 
+     		<?php } ?>
+      </select> 
+      <script type="text/javascript">
+      	$("#skill").click(function(){
+	         var id = $(this).val();
+	         var course_id = $("#course_id").val();
+           	$.ajax({
+               type: "GET",
+                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&course_id="+course_id+"&flg=mapped_quiz_skill",
+                contentType: "application/html",
+                dataType: "html",
+               success: function (result) {
+                  $('.sub_skill').html(result);
+               },
+               error: function (xhr, textStatus, errorThrown) { alert(textStatus + ':' + errorThrown); }
+           });
+         });
+      </script>
+	<?php }
+	elseif($_GET['flg']=='update_mapped_course_skill'){ ?>
+		<input type="hidden" name="course_id" id="update_course_id" value="<?=$_GET['id']?>">
+		<select class="form-control" id="update_skill" name="skill[]" multiple>
+         <?php 
+          	$skills_ids = $DB->get_records_sql("SELECT DISTINCT {skill_quiz_mapping}.skill_id  FROM {skill_quiz_mapping} where course_id IN (".$_GET['id'].")");
+          	if(count($skills_ids)){
+		         foreach($skills_ids as $skills_id){
+		         	$skill_id_value[] = $skills_id->skill_id;
+		         }
+	         	$ids = implode(",",$skill_id_value);
+	         	$skills = $DB->get_records_sql("SELECT * FROM {skill} WHERE id IN (".$ids.")");
+	      	}
+		      else{
+		         $skills = $DB->get_records_sql("SELECT * FROM {skill} ");
+		      }
+            foreach($skills as $skill){ ?>
+             <option value="<?=$skill->id?>"><?=$skill->skill?></option> 
+     		 <?php } ?>
+      </select> 
+      <script type="text/javascript">
+      	$("#update_skill").click(function(){
+         	var id = $(this).val();
+         	var course_id = $("#update_course_id").val();
+           	$.ajax({
+               type: "GET",
+                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&course_id="+course_id+"&flg=update_mapped_quiz_skill",
+                contentType: "application/html",
+                dataType: "html",
+               success: function (result) {
+                  $('.update_sub_skill').html(result);
+               },
+               error: function (xhr, textStatus, errorThrown) { alert(textStatus + ':' + errorThrown); }
+           	});
+     		});
+      </script>
+	<?php }elseif($_GET['flg']=='update_mapped_quiz_skill'){
    		$ids = $_GET['id'];
    		$course_id = $_GET['course_id'];
    		$skills = $DB->get_records_sql("SELECT * FROM {skill} where id IN (".$ids.")");
@@ -910,86 +1063,14 @@ if($_GET){
             </table>
          </div>
       <?php } 	
-	}elseif($_GET['flg']=='mapped_course_skill'){ ?>
-		<input type="hidden" name="course_id" id="course_id" value="<?=$_GET['id']?>">
-		<select class="form-control" id="skill" name="skill[]" multiple>
-         <?php 
-          	$skills_ids = $DB->get_records_sql("SELECT skill_id FROM {course_skill} where  course_id IN (".$_GET['id'].")");
-          	if(count($skills_ids)){
-		         foreach($skills_ids as $skills_id){
-		         	$skill_id_value[] = $skills_id->skill_id;
-		         }
-	         	$ids = implode(",",$skill_id_value);
-	         	$skills = $DB->get_records_sql("SELECT * FROM {skill} WHERE id IN (".$ids.")");
-	      	}
-		      else{
-		         $skills = $DB->get_records_sql("SELECT * FROM {skill} ");
-		      }
-            foreach($skills as $skill){ ?>
-            <option value="<?=$skill->id?>"><?=$skill->skill?></option> 
-     		<?php } ?>
-      </select> 
-      <script type="text/javascript">
-      	$("#skill").click(function(){
-	         var id = $(this).val();
-	         var course_id = $("#course_id").val();
-           	$.ajax({
-               type: "GET",
-                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&course_id="+course_id+"&flg=mapped_quiz_skill",
-                contentType: "application/html",
-                dataType: "html",
-               success: function (result) {
-                  $('.sub_skill').html(result);
-               },
-               error: function (xhr, textStatus, errorThrown) { alert(textStatus + ':' + errorThrown); }
-           });
-         });
-      </script>
-	<?php }
-	elseif($_GET['flg']=='update_mapped_course_skill'){ ?>
-		<input type="hidden" name="course_id" id="course_id" value="<?=$_GET['id']?>">
-		<select class="form-control" id="skill" name="skill[]" multiple>
-         <?php 
-          	$skills_ids = $DB->get_records_sql("SELECT DISTINCT {skill_quiz_mapping}.skill_id  FROM {skill_quiz_mapping} where course_id IN (".$_GET['id'].")");
-          	if(count($skills_ids)){
-		         foreach($skills_ids as $skills_id){
-		         	$skill_id_value[] = $skills_id->skill_id;
-		         }
-	         	$ids = implode(",",$skill_id_value);
-	         	$skills = $DB->get_records_sql("SELECT * FROM {skill} WHERE id IN (".$ids.")");
-	      	}
-		      else{
-		         $skills = $DB->get_records_sql("SELECT * FROM {skill} ");
-		      }
-            foreach($skills as $skill){ ?>
-             <option value="<?=$skill->id?>"><?=$skill->skill?></option> 
-     		 <?php } ?>
-      </select> 
-      <script type="text/javascript">
-      	$("#skill").click(function(){
-         	var id = $(this).val();
-         	var course_id = $("#course_id").val();
-           	$.ajax({
-               type: "GET",
-                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&course_id="+course_id+"&flg=update_mapped_quiz_skill",
-                contentType: "application/html",
-                dataType: "html",
-               success: function (result) {
-                  $('.update_sub_skill').html(result);
-               },
-               error: function (xhr, textStatus, errorThrown) { alert(textStatus + ':' + errorThrown); }
-           	});
-     		});
-      </script>
-	<?php }
-	elseif($_GET['flg']=='skill_weightage'){  /// skill weightage for sub skill with lavel
+	}elseif($_GET['flg']=='skill_weightage'){  /// skill weightage for sub skill with lavel
 		$ids = $_GET['id']; // skill id
  		$skills = $DB->get_records_sql("SELECT * FROM {skill} where id = $ids");
 	   foreach($skills as $skill){ ?>
 	      <div class="edit_weightage Skills">
 	         <div class="tresh">
 	            <select name="skill_proficiency" class="form-control" required>
-	               <option value="">Select One </option>
+	               <!-- <option value="">Select One </option> -->
 	               <option value="Awareness">Awareness</option>
 	               <option value="Knowledge">Knowledge</option>
 	               <option value="Skilled">Skilled</option>
@@ -1035,22 +1116,122 @@ if($_GET){
 		   	</div> 
 	   <?php } 	  
 	}elseif($_GET['flg']=='assigned_default_course'){ 
-	$skill_id = $_GET['id']; ?>
+	$skill_id = $_GET['id']; 
+		$defaul_category_sql="SELECT * FROM {course_category_settings}";
+		$defaul_category_data=$DB->get_record_sql($defaul_category_sql,array());
+		$default_course_category_id=null;
+		$certificate_course_category_id=null;
+		if(!empty($defaul_category_data)){
+			$default_course_category_id=$defaul_category_data->default_course_category;
+			$certificate_course_category_id=$defaul_category_data->certificate_course_category;
+		}
+	?>
+	<div class="col-sm-6">
+		<label>default Course</label>
 		<select class="form-control" id="default_course" name="default_course">
          <option value="">Select one</option> 
           <?php 
 				$cours_id = $DB->get_record_sql("SELECT DISTINCT {skill_weightage}.default_course,{course}.fullname,{course}.id FROM {course} INNER JOIN {skill_weightage} ON {course}.id = {skill_weightage}.default_course where {skill_weightage}.skill_id = $skill_id");
-            $courses = $DB->get_records_sql("SELECT * FROM {course} order by id DESC");
+    
+            $course_sql="SELECT c.id,c.fullname FROM {course} c JOIN {course_categories} cc on cc.id=c.category WHERE c.visible=? AND cc.visible=? AND cc.id=?";
+            $courses=$DB->get_records_sql($course_sql,array(1,1,$default_course_category_id));
 
             foreach($courses as $course){
          ?>
          	<option value="<?=$course->id?>"<?php if ($cours_id->id == $course->id) echo 'selected'?> ><?=$course->fullname ?></option>
          <?php } ?>
       </select>
-		<?php 
-	}elseif($_GET['flg']=='skill_weightage_list'){  /// skill weightage for sub skill with lavel
+      </div>
+
+      <div class="col-sm-6">
+      	<label>Skill based certificate course</label>
+		<select class="form-control" id="skill_certificate_course" name="skill_certificate_course" >
+         <option value="">Select one</option> 
+          <?php 
+				$cours_id = $DB->get_record_sql("SELECT DISTINCT {skill_weightage}.certificate_course,{course}.fullname,{course}.id FROM {course} INNER JOIN {skill_weightage} ON {course}.id = {skill_weightage}.certificate_course where {skill_weightage}.skill_id = $skill_id");
+           // $courses = $DB->get_records_sql("SELECT * FROM {course} order by id DESC");
+            $course_sql="SELECT c.id,c.fullname FROM {course} c JOIN {course_categories} cc on cc.id=c.category WHERE c.visible=? AND cc.visible=? AND cc.id=?";
+            $courses=$DB->get_records_sql($course_sql,array(1,1,$certificate_course_category_id));
+
+            foreach($courses as $course){
+         ?>
+         	<option value="<?=$course->id?>"<?php if ($cours_id->id == $course->id) echo 'selected'?> ><?=$course->fullname ?></option>
+         <?php } ?>
+      </select>
+      </div>
+	<?php 
+	}elseif($_GET['flg'] == "update_assigned_course_to_sub_skill"){
+   	$course_id = $_GET['course_id'];
+
+   	$assign_course = $DB->get_record_sql("SELECT course_id FROM {assign_course_sub_skill} where course_id = $course_id");
+   	if($assign_course->course_id == $course_id){
+   	?>
+   		<div class="form-group">
+	      <label class="control-label" for="course">Course:</label>
+	      <select class="form-control" id="update_course" name="update_course">
+	         <option> Select One </option>
+	         <?php
+	            $courses = $DB->get_records_sql("SELECT * FROM {course} ");
+	            foreach($courses as $course){
+	         ?>
+	         <option value="<?=$course->id?>" <?php if($assign_course->course_id == $course->id) echo 'selected'?>><?=$course->fullname ?>
+	         	
+	         </option>
+	         <?php } ?>
+	      </select> 
+	      </div>
+		   <div class="form-group">
+		      <div class="toggle-box-region sub_skill" >
+		         <label class="control-label" for="skill"> Sub Skill: </label>	        
+	            <div class="row toggle-box-content"> 
+	               <table class="table table-striped">
+	                  <thead>
+	                     <tr>
+	                        <th scope="col">Sr No </th>
+	                        <th scope="col">Sub Skill</th>
+	                        <th scope="col">Proficiency Level</th> 
+	                     </tr>
+	                  </thead>
+	                  <tbody>
+	                     <?php 
+	                        $subSkills = $DB->get_records_sql("SELECT * FROM {sub_skill}");
+	                        $i=1;
+	                        foreach($subSkills as $subSkill){
+	                     ?>
+	                        <tr>
+	                          	<td scope="col"><?=$i?></td>
+	                          	<td scope="col"><?=$subSkill->sub_skills?>
+	                          	<input type="hidden" name="update_sub_skill_id[]" value="<?=$subSkill->id?>">
+	                          	</td>
+	                          	<td>
+	                            <select name="update_proficiency_id[]" class="form-control proficiency">
+	                              <option value="0"> None </option> 
+	                              <?php 
+	                               $as_prof_lvl = $DB->get_record_sql("SELECT {proficiency_level}.proficiency_level,{assign_course_sub_skill}.proficiency_id FROM {assign_course_sub_skill} INNER JOIN {proficiency_level} on {assign_course_sub_skill}.proficiency_id = {proficiency_level}.id  where course_id = $course_id AND sub_skill_id = $subSkill->id");
+
+	                                 $proficiencys = $DB->get_records_sql("SELECT * FROM {proficiency_level}");
+	                                 foreach($proficiencys as $proficiency){ ?>
+	                                 <option value="<?=$proficiency->id?>" <?php if($as_prof_lvl->proficiency_id == $proficiency->id) echo 'selected';?> ><?=$proficiency->proficiency_level?>
+	                                 </option> 
+	                              <?php } ?>
+	                           </select>  
+	                          	</td>
+	                        </tr>
+	                     <?php $i++; } ?>
+	                  </tbody>
+	               </table>
+	            </div>
+		      </div> 
+		   </div>
+		   <div class="form-group">
+	         <div class="col-sm-offset-2 col-sm-10">
+	            <input type="hidden" name="flg" value="update_course_to_sub_skill">
+	            <button type="submit" class="btn btn-primary">Update Asign course to sub skill </button>
+	         </div>
+	      </div>
+	<?php }
+   }elseif($_GET['flg']=='skill_weightage_list'){  /// skill weightage for sub skill with lavel
 	$ids = $_GET['id'];
-	
  	$skills_weit_lists = $DB->get_records_sql("SELECT * FROM {skill_weightage} where skill_id = $ids");
  	$default_courses = $DB->get_record_sql("SELECT DISTINCT default_course FROM {skill_weightage} where skill_id = $ids");
  	 	if(count($skills_weit_lists)){
@@ -1067,10 +1248,10 @@ if($_GET){
 		               <option value="Mastery" <?php if($skills_weit_list->skill_proficiency =="Mastery") echo 'selected';?> >Mastery</option>
 		            </select>
 		         </div>
-		        <div class="delete">
-		      	<a onClick="javascript: return confirm('Are you sure to delete');" href="manage.php?flg=delete_skill_weightage&id=<?=$skills_weit_list->id?>" class="btn btn-primary" class="btn btn-primary delete" ><i class="fa fa-trash-o"></i>
-		      	</a>
-		      </div>
+		         <div class="delete">
+			      	<a onClick="javascript: return confirm('Are you sure to delete');" href="manage.php?flg=delete_skill_weightage&id=<?=$skills_weit_list->id?>" class="btn btn-primary" class="btn btn-primary delete" ><i class="fa fa-trash-o"></i>
+			      	</a>
+		         </div>
 		         <input type="hidden" name="update_skill" value="<?=$skills_weightages->id ?>">
 		         <input type="hidden" name="default_course" value="<?=$default_courses->default_course ?>">
 		         <input type="hidden" name="skill_wetg_id[]" value="<?=$skills_weit_list->id?>">

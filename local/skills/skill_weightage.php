@@ -1,4 +1,6 @@
 <?php require_once("../../config.php");
+global $PAGE,$CFG;
+//$PAGE->requires->jquery();
 echo $OUTPUT->header();
 
 ?>
@@ -65,9 +67,10 @@ echo $OUTPUT->header();
    <div class="box">
       <h3 class="card-header" id="category-listing-title"> Skills Weightage</h3>
       <div class="card-body">
+        <form class="form-horizontal" id="form-weigt" method="post" action="manage.php">
          <div class="row">
             <div class="col-sm-6">
-               <form class="form-horizontal" action="manage.php" method="post">
+          <!--      <form class="form-horizontal" id="form-weigt"> -->
                   <div class="row">
                     <div class="col-sm-12">
                         <div class="form-group">
@@ -91,21 +94,22 @@ echo $OUTPUT->header();
                            </div>
                         </div>
                         <div class="form-group">
-                           <label class="control-label" for="pwd">Course: </label>
-                           <div class="assigned_default_course" ></div>
+                           <!-- <label class="control-label" for="pwd">Course: </label> -->
+                           <div class="row assigned_default_course" ></div>
                         </div>
                      </div>
                      <div class="col-sm-offset-2 col-sm-12">
                         <div class="form-group">
                            <input type="hidden" name="flg" value="add_skill_weightage">
-                           <button type="submit" class="btn btn-primary">Skill Weighatage</button>
+                           <input type="submit" name="add" class="btn btn-primary add-btn" value="Skill Weighatage">
+                           <!-- <button type="submit" class="btn btn-primary" name="add">Skill Weighatage</button> -->
                         </div>
                      </div>
                   </div>
-               </form>
+               <!-- </form> -->
             </div>
             <div class="col-sm-6">
-               <form class="form-horizontal" action="manage.php" method="post">
+               <!-- <form class="form-horizontal" action="manage.php" method="post"> -->
                   <div class="form-group">
                      <label class="control-label" for="pwd"> Sub Skill List: </label>
                      <div class="toggle-box-region sub_skill_list">
@@ -115,12 +119,14 @@ echo $OUTPUT->header();
                   <div class="form-group">
                      <div class="col-sm-offset-2 col-sm-10">
                         <input type="hidden" name="flg" value="update_skill_weightage">
-                        <button type="submit" class="btn btn-primary">Update Skill Weighatage</button>
+                     <input type="submit" name="update" class="btn btn-primary update-btn" id="update-btn" value="Update Skill Weighatage">
+                       <!--  <button type="submit" class="btn btn-primary update-btn" name="update">Update Skill Weighatage</button> -->
                      </div>
                   </div>
-               </form>
+               <!-- </form> -->
             </div>
          </div>
+        </form>
       </div>
    </div>
 </div>
@@ -129,6 +135,74 @@ echo $OUTPUT->header();
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>  
 <script type="text/javascript">
    $(document).ready(function() {
+
+      $('.add-btn').click(function(e){
+         e.preventDefault();
+         //console.log($('#form-weigt').serialize());
+         $.ajax({
+            type:"POST",
+            url:"<?php echo $CFG->wwwroot.'/local/skills/manage.php?flg=add_skill_weightage'?>",
+            data:$('#form-weigt').serialize(),
+            beforeSend:function(){
+               $('.add-btn').prop('disabled',true);
+               $('.add-btn').val('Please wait...');
+            },
+            success:function(response){
+               var data=JSON.parse(response);
+              if(data.status==true){
+                  alert(data.msg);
+                  window.location.reload();
+              }else{
+               alert(msg);
+              }
+            },
+            complete:function(){
+                $('.add-btn').prop('disabled',false);
+               $('.add-btn').val('Skill Weighatage');
+            }
+         });
+        
+      });
+
+        $('.update-btn').click(function(e){
+         e.preventDefault();
+       //  console.log($('#form-weigt').serialize());
+         $.ajax({
+            type:"POST",
+            url:"<?php echo $CFG->wwwroot.'/local/skills/manage.php?flg=update_skill_weightage'?>",
+            data:$('#form-weigt').serialize(),
+            beforeSend:function(){
+               $('.update-btn').prop('disabled',true);
+               $('.update-btn').val('Please wait...');
+            },
+            success:function(response){
+              var data=JSON.parse(response);
+              if(data.status==true){
+                  alert(data.msg);
+                  window.location.reload();
+              }else{
+               alert(msg);
+              }
+            },
+            complete:function(){
+               $('.update-btn').prop('disabled',false);
+               $('.update-btn').val('Update Skill Weighatage');
+            }
+         });
+        
+      });
+      //$('#form-weigt').on('submit',)
+       /* $('#update-btn').submit(function(e){
+         e.preventDefault();
+         $.ajax({
+            type:"POST",
+            url:"<?php echo $CFG->wwwroot.'/local/skills/manage.php?flg=update_skill_weightage'?>",
+            data:$('#form-weigt').serialize(),
+            success:function(response){
+               alert(response);
+            }
+         });
+      });*/
       $("#skill").select2();
       $("#skill").change(function(){
          var id = $(this).val();

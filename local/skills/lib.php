@@ -47,9 +47,10 @@ function local_skills_extend_navigation(global_navigation $navigation) {
          $sidemenu="Add Skills  | ". $CFG->wwwroot."/local/skills/index.php  
         Assign Skills  | ". $CFG->wwwroot."/local/skills/assignskill.php
         Course Skills | ". $CFG->wwwroot."/local/skills/courseskill.php
-        Skills Quiz Mapping | ". $CFG->wwwroot."/local/skills/skill_quiz_mapping.php
         Skill Weightage | ". $CFG->wwwroot."/local/skills/skill_weightage.php
-        learning Path | ". $CFG->wwwroot."/local/skills/learning_path_form.php
+        Skills Quiz Mapping | ". $CFG->wwwroot."/local/skills/skill_quiz_mapping.php
+        Assign course to sub skill | ". $CFG->wwwroot."/local/skills/assign_course_sub_skill.php
+        Proficiency Level Setting | ".$CFG->wwwroot."/local/skills/proficiency_level_setting.php
         "
         ;
         $menu = new custom_menu($sidemenu, current_language());
