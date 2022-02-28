@@ -209,7 +209,7 @@ echo $OUTPUT->header();
          // alert(id);
             $.ajax({
                type: "GET",
-                url: "http://175.111.182.35/SDVK/local/skills/manage.php?id="+id+"&flg=skill_weightage",
+                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&flg=skill_weightage",
                 //data: {'id': id,'audio': 'audio'},
                 contentType: "application/html",
                 dataType: "html",
@@ -222,7 +222,7 @@ echo $OUTPUT->header();
 
             $.ajax({
                type: "GET",
-                url: "http://175.111.182.35/SDVK/local/skills/manage.php?id="+id+"&flg=skill_weightage_list",
+                url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&flg=skill_weightage_list",
                 //data: {'id': id,'audio': 'audio'},
                 contentType: "application/html",
                 dataType: "html",
@@ -235,7 +235,7 @@ echo $OUTPUT->header();
 
             $.ajax({
                type: "GET",
-               url: "http://175.111.182.35/SDVK/local/skills/manage.php?id="+id+"&flg=assigned_default_course",
+               url: "<?php echo $CFG->wwwroot;?>"+"/local/skills/manage.php?id="+id+"&flg=assigned_default_course",
                 //data: {'id': id,'audio': 'audio'},
                contentType: "application/html",
                dataType: "html",

@@ -2,7 +2,7 @@
 <?php 
       require_once("locallib.php");
       global $USER;
-   
+        $skill_id=required_param('skill_id',PARAM_INT);
         $id=required_param('id',PARAM_INT);
         $PAGE->requires->jquery();
         $PAGE->set_url('/blocks/skill_list/course_details.php', array('id' => $id));
@@ -17,9 +17,7 @@
         $course_data=$blocksApi->course_summary($id);
         $course_image=$blocksApi->getcourse_image($id);
         $course_content=$blocksApi->course_content($id);
-        /*echo "<pre>";
-        print_r($course_content);
-        echo "</pre>";*/
+        
        echo $OUTPUT->header();
      global $CFG, $DB, $USER, $PAGE;
      
@@ -29,9 +27,9 @@
  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
 
 <div class="container">
-   <div class="card-body">
+   <div class="card-body p-0">
       <div class="row">
-         <div class="col-sm-12">
+         <div class="col-sm-12 p-0 ">
             <div class="img_div" >
                <img src="<?php echo $course_image; ?>"  width="100%" height="100%">
             </div>
@@ -41,15 +39,119 @@
 
             </div>
             <div>
-               <p class="text-white">
+                <?php
+                //rating code
+                $ra_sql="SELECT * FROM {skill_course_rating} WHERE courseid=? AND status=? ";
+                $ra_data=$DB->get_record_sql($ra_sql,array($id,1));
+                if(!empty($ra_data)){
+                    if($ra_data->stars==1){
+                    echo ' <p class="text-white rating-stars">
+                    <span class="text-white ">1</span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }elseif($ra_data->stars==1.5){
+                         echo ' <p class="text-white rating-stars">
+                         <span class="text-white ">1.5</span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating1.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }
+                    elseif($ra_data->stars==2){
+                         echo ' <p class="text-white rating-stars">
+
+                <span class="text-white ">2</span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                 
+               </p>';
+                    }
+                    elseif($ra_data->stars==2.5){
+                         echo ' <p class="text-white rating-stars">
+                  <span class="text-white">2.5</span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating1.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }
+                    elseif($ra_data->stars==3){
+                         echo ' <p class="text-white rating-stars">
+                  <span class="text-white">3</span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }
+                    elseif($ra_data->stars==3.5){
+                         echo ' <p class="text-white rating-stars">
                   <span class="text-white">3.5</span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating1.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }
+                    elseif($ra_data->stars==4){
+                         echo ' <p class="text-white rating-stars">
+                  <span class="text-white">4</span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating2.png"></span>
+               </p>';
+                    }
+                      elseif($ra_data->stars==4.5){
+                         echo ' <p class="text-white rating-stars">
+                  <span class="text-white">4.5</span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating1.png"></span>
+               </p>';
+                    }
+                      elseif($ra_data->stars==5){
+                         echo ' <p class="text-white rating-stars">
+                  <span class="text-white">5</span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                 <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+                  <span><img src="'.$CFG->wwwroot.'/theme/skills/pix/rating3.png"></span>
+               </p>';
+                    }
+
+                    echo '<p class="text-white">( '.number_format($ra_data->no_of_user).' ratings)</p>';
+
+                }else{
+
+
+                ?>
+               <!-- <p class="text-white">
+                  <span class="text-white">3.5</span>
+                  <span><img src=""></span>
                   <span class="fa fa-star checked"></span>
                   <span class="fa fa-star checked"></span>
-                  <span class="fa fa-star checked"></span>
-                  <span class="fa fa-star"></span>
+                  <span class="fa fa-star-half-alt checked"></span>
                   <span class="fa fa-star"></span>
                </p>
-               <p class="text-white">(4,565 ratings)</p>
+               <p class="text-white">(4,565 ratings)</p> -->
+           <?php } ?>
             </div>
          </div>
          <div class="col-sm-12">
@@ -106,45 +208,7 @@
                   </div>
               <?php $i++; } ?>
 
-                <!--   <div class="text-white">
-                    <div class="card-header" id="heading-2">
-                      <h5 class="mb-0">
-                        <a class="collapsed text-white" role="button" data-toggle="collapse" href="#collapse-2" aria-expanded="false" aria-controls="collapse-2">
-                         Section2 - Creating your team version</a>
-                      </h5>
-                    </div>
-                    <div id="collapse-2" class="collapse" data-parent="#accordion" aria-labelledby="heading-2">
-                      <div class="card-body text-white">
-                        After subscription you will get our special trade copier. If you want to use this copier for business purpose or other commercial pupose then directly contact with www.fxcopier.co.uk.
-                      </div>
-                    </div>
-                  </div> -->
-                 <!--  <div class="text-white">
-                    <div class="card-header" id="heading-3">
-                      <h5 class="mb-0">
-                        <a class="collapsed text-white" role="button" data-toggle="collapse" href="#collapse-3" aria-expanded="false" aria-controls="collapse-3">
-                         Section3 - Definig your team goals</a>
-                      </h5>
-                    </div>
-                    <div id="collapse-3" class="collapse" data-parent="#accordion" aria-labelledby="heading-3">
-                      <div class="card-body text-white">
-                        After subscription you will get our special trade copier. If you want to use this copier for business purpose or other commercial pupose then directly contact with www.fxcopier.co.uk.
-                      </div>
-                    </div>
-                  </div> -->
-                  <!-- <div class="text-white">
-                    <div class="card-header" id="heading-4">
-                      <h5 class="mb-0">
-                        <a class="collapsed text-white" role="button" data-toggle="collapse" href="#collapse-4" aria-expanded="false" aria-controls="collapse-4">
-                         Section4 - Bonus Points </a>
-                      </h5>
-                    </div>
-                    <div id="collapse-4" class="collapse" data-parent="#accordion" aria-labelledby="heading-4">
-                      <div class="card-body text-white">
-                        After subscription you will get our special trade copier. If you want to use this copier for business purpose or other commercial pupose then directly contact with www.fxcopier.co.uk.
-                      </div>
-                    </div>
-                  </div> -->
+               
                </div>
             </div>
          </div>
@@ -155,16 +219,25 @@
                <p class="text-white"><i class="fa fa-cc" aria-hidden="true"></i> &nbsp;&nbsp; &nbsp;&nbsp;Access on Mobile and Desktop</p>
             </div>
          </div>
-         <div class="col-sm-12 text-right">
+         <div class="d-flex justify-content-between align-items-center w-100">
+          <div class="text-left goToDash">
+           <h5> <a href="<?php echo $CFG->wwwroot.'/blocks/skill_list/skilling_path.php?skill_id='.$skill_id; ?>" class="btn btn-primary">Skilling Path</a></h5>
+         </div>
+         <div class=" text-right start_learning">
             <a href="<?php echo $CFG->wwwroot.'/course/view.php?id='.$id; ?>" class="btn btn-primary ">Start Learning</a>
+         </div>
+             
          </div>
       </div>
    </div>
 </div>
 <style type="text/css">
     .img_div{
-        height: 500px;
         margin-bottom: 30px;
+        height: 500px;
+    }
+    .btn-skill{
+        display: none;
     }
 
     .img_div img{
@@ -172,8 +245,10 @@
         height: 100%;
         object-fit: cover;
     }
-    .breadcrumb-item{
-        color: #000;
+
+    .rating-stars img{
+        width: 30px;
+        height: 30px;
     }
 
     .f_text{
@@ -196,14 +271,55 @@
        .mb-20{
          margin-bottom: 15px;
        }
-    
+    #course-header a{
+      color:#fff;
+    }
+    .goToDash h5 a{
+      color: #fff;
+    }
+
+    .goToDash h5{
+        margin-bottom: 0px;
+    }
     @media (max-width: 768px) {
        .summary-text{
           text-align: justify;
        }
-       .img_div{
-         height: auto;
+       #course-header{
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-bottom: 10px;
        }
-    }
+
+       .f_text{
+        font-size: 20px;
+       }
+
+       .img_div{
+        margin-bottom: 15px;
+	height: fit-content;
+       }
+	
+    	}
+
+    @media(max-width:  568px){
+       .text-left.goToDash a{
+            font-size: 12px;
+        }
+        .start_learning a{
+            font-size: 12px;
+        }
+	
+	.img_div{
+        margin-bottom: 15px;
+	height: fit-content;
+       }
+
+	}
 </style>
+<script type="text/javascript">
+   $("#course-header").html("<a href='<?php echo $CFG->wwwroot.'/blocks/skill_list/skilling_path.php?skill_id='.$skill_id?>'> Go to Skilling Path </a>");
+    
+</script>
 <?php echo $OUTPUT->footer();?>

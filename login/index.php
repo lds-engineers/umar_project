@@ -26,7 +26,8 @@
 
 require('../config.php');
 require_once('lib.php');
-
+global $PAGE;
+$PAGE->requires->jquery();
 redirect_if_major_upgrade_required();
 
 $testsession = optional_param('testsession', 0, PARAM_INT); // test session works properly
@@ -379,4 +380,35 @@ if (isloggedin() and !isguestuser()) {
     echo $OUTPUT->render($loginform);
 }
 
+?>
+<script type="text/javascript">
+    $(function(){
+       $('.show-password').click(function(){
+           // alert('ok');
+            var data=$(this).attr('data-id');
+            if(data=="true"){//fa-eye-slash
+                //$(this).parents('input').attr('type','text');
+                $('#password').attr('type','text');
+                $(this).removeClass('fa-eye-slash');
+                $(this).addClass('fa-eye');
+                $(this).attr('data-id',"false");
+            }else{
+              // $(this).parents('input').attr('type','password');
+                $('#password').attr('type','password');
+                $(this).attr('data-id',"true"); 
+                 $(this).removeClass('fa-eye ');
+                $(this).addClass('fa-eye-slash');
+            }
+       });
+    });
+</script>
+<style type="text/css">
+    .row{
+        margin: 0px !important;
+    }
+    #page-wrapper #page{
+        padding: 0px !important;
+    }
+</style>
+<?php
 echo $OUTPUT->footer();

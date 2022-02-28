@@ -76,6 +76,9 @@
                         <div class="region_main_settings_menu_proxy"></div>
                     {{/hasregionmainsettingsmenu}}
                     {{{ output.course_content_header }}}
+                    {{#has_skill}}
+                        <a href="{{skill_url}}" class="btn btn-skill ">Skilling Path</a>
+                    {{/has_skill}}
                     {{{ output.main_content }}}
                     {{{ output.activity_navigation }}}
                     {{{ output.course_content_footer }}}

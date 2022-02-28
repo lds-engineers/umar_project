@@ -1,4 +1,5 @@
 <?php require_once("../../config.php");
+global $DB,$USER,$CFG;
 echo $OUTPUT->header();
 include("common_css.php");
 ?>
@@ -119,7 +120,7 @@ include("common_css.php");
           // alert(course_id);
          $.ajax({
             type: "GET",
-             url: "http://175.111.182.35/SDVK/local/skills/manage.php?id="+course_id+"&flg=mapped_course_skill",
+             url: "<?php echo $CFG->wwwroot; ?>"+"/local/skills/manage.php?id="+course_id+"&flg=mapped_course_skill",
              //data: {'id': id,'audio': 'audio'},
              contentType: "application/html",
              dataType: "html",
@@ -135,7 +136,7 @@ include("common_css.php");
           // alert(course_id);
          $.ajax({
             type: "GET",
-             url: "http://175.111.182.35/SDVK/local/skills/manage.php?id="+course_id+"&flg=update_mapped_course_skill",
+             url: "<?php echo $CFG->wwwroot; ?>"+"/local/skills/manage.php?id="+course_id+"&flg=update_mapped_course_skill",
              //data: {'id': id,'audio': 'audio'},
              contentType: "application/html",
              dataType: "html",

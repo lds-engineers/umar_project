@@ -30,7 +30,8 @@ $templatecontext = [
     'sitename' => format_string($SITE->shortname, true, ['context' => context_course::instance(SITEID), "escape" => false]),
     'output' => $OUTPUT,
     'bodyattributes' => $bodyattributes,
-    'copyright'=>copyright()
+    'copyright'=>copyright(),
+    'logo_url'=>logo_url()
 ];
 
 echo $OUTPUT->render_from_template('theme_skills/login', $templatecontext);

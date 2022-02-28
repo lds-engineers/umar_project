@@ -101,10 +101,10 @@
 <div class="card">
     <div class="card-block mainloginform">
         {{#logourl}}
-            <h2 class="card-header text-center" ><img src="{{logourl}}" class="img-fluid" title="{{sitename}}" alt="{{sitename}}"/></h2>
+            <!--<h2 class="card-header text-center" ><img src="{{logourl}}" class="img-fluid" title="{{sitename}}" alt="{{sitename}}"/></h2>-->
         {{/logourl}}
         {{^logourl}}
-            <h2 class="card-header text-center">{{sitename}}</h2>
+           <!-- <h2 class="card-header text-center">{{sitename}}</h2>-->
         {{/logourl}}
         <div class="card-body">
             {{#cansignup}}
@@ -123,7 +123,8 @@
             <div class="row justify-content-md-center">
                 <div class="col-md-5">
                 <div class="vactor_img">
-                   <img src="http://175.111.182.35/SDVK/theme/skills/pix/login.png" >
+                {{#pix}} Logo, theme_skills, Logo {{/pix}}
+                  
                 </div>
 
                     <form class="mt-3" action="{{loginurl}}" method="post" id="login">
@@ -158,6 +159,7 @@
                                 class="form-control"
                                 placeholder={{#quote}}{{#str}}password{{/str}}{{/quote}}
                                 autocomplete="current-password">
+                                <i class="fa fa-eye-slash eye_icon show-password" data-id="true" aria-hidden="true"></i>
                             </div>
                         </div>
                         <div class="forgetpass mt-3 text-right">

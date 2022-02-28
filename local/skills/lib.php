@@ -51,6 +51,8 @@ function local_skills_extend_navigation(global_navigation $navigation) {
         Skills Quiz Mapping | ". $CFG->wwwroot."/local/skills/skill_quiz_mapping.php
         Assign course to sub skill | ". $CFG->wwwroot."/local/skills/assign_course_sub_skill.php
         Proficiency Level Setting | ".$CFG->wwwroot."/local/skills/proficiency_level_setting.php
+        Course Rating | ".$CFG->wwwroot."/local/skills/course-rating.php
+         Category Setting | ".$CFG->wwwroot."/local/skills/category_settings.php
         "
         ;
         $menu = new custom_menu($sidemenu, current_language());
@@ -156,3 +158,43 @@ function local_skills_get_string($string) {
     }
     return $title;
 }
+function proficiency_data(){
+    global $DB,$USER;
+     $dbman = $DB->get_manager();
+     if($dbman->table_exists('proficiency_level')){
+        $sql="SELECT * FROM {proficiency_level}";
+
+    $data=$DB->get_records_sql($sql,array());
+    if(empty($data)){
+        $arr=array(
+            array('id'=>1,'proficiency_level'=>'Awareness','minimum_range'=>0,'maximum_range'=>40,'createdby'=>2,'modifiedby'=>2,'createddate'=>1640071513,'modifieddate'=>1640071513,'modify'=>'2021-11-26 15:59:11','deleted'=>0),
+            array('id'=>2,'proficiency_level'=>'Awareness','minimum_range'=>0,'maximum_range'=>40,'createdby'=>2,'modifiedby'=>2,'createddate'=>1640071513,'modifieddate'=>1640071513,'modify'=>'2021-11-26 15:59:11','deleted'=>0),
+            array('id'=>3,'proficiency_level'=>'Knowledge','minimum_range'=>41,'maximum_range'=>60,'createdby'=>2,'modifiedby'=>2,'createddate'=>1640071513,'modifieddate'=>1640071513,'modify'=>'2021-11-26 15:59:11','deleted'=>0),
+            array('id'=>4,'proficiency_level'=>'Skilled','minimum_range'=>61,'maximum_range'=>80,'createdby'=>2,'modifiedby'=>2,'createddate'=>1640071513,'modifieddate'=>1640071513,'modify'=>'2021-11-26 15:59:11','deleted'=>0),
+            array('id'=>5,'proficiency_level'=>'Mastery','minimum_range'=>81,'maximum_range'=>100,'createdby'=>2,'modifiedby'=>2,'createddate'=>1640071513,'modifieddate'=>1640071513,'modify'=>'2021-11-26 15:59:11','deleted'=>0));
+        foreach($arr as $list){
+            $std=new stdClass();
+            $std->proficiency_level=$list['proficiency_level'];
+            $std->minimum_range=$list['minimum_range'];
+            $std->maximum_range=$list['maximum_range'];
+            $std->createdby=$list['createdby'];
+            $std->modifiedby=$list['modifiedby'];
+            $std->createddate=$list['createddate'];
+            $std->modifieddate=$list['modifieddate'];
+            $std->modify=$list['modify'];
+            $std->deleted=$list['deleted'];
+
+            $DB->insert_record_raw("proficiency_level",$std);
+        }
+
+    }
+    $sql2="SELECT * FROM {proficiency_level} WHERE id=?";
+
+    $data2=$DB->get_record_sql($sql2,array(1));
+        if(!empty($data2)){
+            $DB->delete_records('proficiency_level',array('id'=>$data2->id));
+        }
+     }
+    
+}
+proficiency_data();

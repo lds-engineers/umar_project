@@ -16,6 +16,7 @@ echo $OUTPUT->header();?>
 
 <form class="form-horizontal" id="usersetgoal">
 	<div class="flex-row mb-3">
+		<!--  -->
 		<div class="col_3">
 			<div>
 				<label>No of courses</label>

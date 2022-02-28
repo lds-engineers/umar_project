@@ -134,6 +134,77 @@ for ($i = $monday; $i <= $sunday;) {
     
     return $max;
   }
+
+  private function usersubskill_data($skillid){
+    global $DB,$USER;
+    $countSubSkill = 0;
+    $sumOfPoint = 0;
+    $subskills = $DB->get_records_sql("SELECT * FROM {sub_skill} where skill_id =?",array($skillid));
+    $subskilltotal = count($subskills);
+    foreach ($subskills as $subskill) {//'subskill'//'subskill'
+      $proficiency_value = $DB->get_record_sql("SELECT * FROM {user_proficiency_level} where userid=? AND type =? AND skill_id=? ",array($USER->id,'subskill',$subskill->id));
+     
+      if(!empty($proficiency_value)){
+        $countSubSkill++;
+        $sumOfPoint = $sumOfPoint+$proficiency_value->after_atempt_point;
+        }
+      }
+      $youwidth ='';
+      if($subskilltotal==$countSubSkill AND $countSubSkill!=0){
+        $avg = $sumOfPoint/$countSubSkill;
+        if($avg >=0 && $avg <= 40){
+          $youwidth="w-25";
+        }elseif($avg >= 41 && $avg <=60){
+          $youwidth="w-50";
+        }elseif($avg >=61 && $avg <= 80){
+          $youwidth="w-75";
+        }elseif($avg >=81){
+         $youwidth="w-100";
+        }
+      }
+      return array("total_sub_skill"=>$subskilltotal,'total_user_get_quiz_subskill'=>$countSubSkill,'youwidth'=>$youwidth,'sumOfPoint'=>$sumOfPoint); 
+      
+
+  }
+  //userstart course
+  public function user_start_course($skillid){
+    global $DB,$USER;
+   // $subskill_data=$DB->get_records_sql("SELECT * FROM {sub_skill} WHERE skill_id=?",array($skillid));
+    $assign_skill_data=$DB->get_record_sql("SELECT * FROM {assign_skill} WHERE user_id=? AND skill_id=? ",array($USER->id,$skillid));
+    $skill_weightage_id=$assign_skill_data->skill_weightage_id;
+    $weightage_meta_data=$DB->get_records_sql("SELECT * FROM {skill_weightage_meta} WHERE skill_id=? AND skill_weightage_id=?",array($skillid,$skill_weightage_id));
+    $course_arr=array(-1);
+    foreach($weightage_meta_data as $meta_list){
+      $user_pro_data=$DB->get_record_sql("SELECT * FROM {user_proficiency_level} WHERE skill_id=? AND type=? AND userid=?",array($meta_list->sub_skill_id,'subskill',$USER->id));
+      $user_pro_id=$user_pro_data->proficiency_id;
+      $user_pro_id_after_attempt=$user_pro_data->after_atempt_proficiency;
+      $required_pro=$meta_list->sub_skill_proficiency;
+      if($user_pro_id<$required_pro){
+
+        for($i=$user_pro_id+1;$i<=$user_pro_id_after_attempt+1;$i++){
+            $course_data=$DB->get_records_sql("SELECT * FROM {assign_course_sub_skill} WHERE sub_skill_id=? AND proficiency_id=?",array($meta_list->sub_skill_id,$i));
+           if(!empty($course_data)){
+              foreach($course_data as $course_list){
+                array_push($course_arr,$course_list->course_id);
+              }
+           }
+        }
+      }
+
+    }
+    $courses_id=implode(',',$course_arr);
+    $log_data=$DB->get_record_sql("SELECT * FROM {logstore_standard_log} WHERE userid=? AND courseid IN(".$courses_id.") ORDER BY id DESC LIMIT 0,1",array($USER->id));
+  
+   if(!empty($log_data)){
+
+    return $log_data->courseid;
+   }else{
+
+    return $course_arr[1];
+   }
+   
+
+  }
   public function get_content() {
     global $CFG, $DB, $USER, $PAGE;
     $id = optional_param('id', $USER->id, PARAM_INT); 
@@ -147,27 +218,27 @@ for ($i = $monday; $i <= $sunday;) {
        $total_goal_time=$goaldata->week_hours;
       $usergoal_data=' <div class="d-flex align-items-center mt-2">
             <div class="text-center fw-bold">
-                <span style="color: #4abef7;">Courses</span>
+                <span class="set_goals_head">Courses</span>
                 <div class="skill_box2">'.$goaldata->no_of_course.'</div>
             </div>
              <div class="text-center fw-bold">
-                <span style="color: #4abef7;">Day</span>
+                <span class="set_goals_head">Day</span>
                 <div class="skill_box2">'.$goaldata->day_hours.':00</div>
             </div>
             <div class="text-center fw-bold">
-                <span style="color: #4abef7;">Week</span>
+                <span class="set_goals_head">Week</span>
                 <div class="skill_box2">'.$goaldata->week_hours.':00</div>
             </div>
            
             <div class="text-center fw-bold">
-                <span style="color: #4abef7;">Set Goal</span>
+                <span class="set_goals_head">Set Goal</span>
                 <a href="'.$CFG->wwwroot.'/blocks/skill_list/set_weekly_goals.php" title="Set Goals"><div class="skill_primary_box2"><i class="fa fa-pencil-square-o text-white "aria-hidden="true"></i></div></a>
             </div>
         </div>';
 
     }else{
       $total_goal_time=56;
-      $usergoal_data='<a href="'.$CFG->wwwroot.'/blocks/skill_list/set_weekly_goals.php" class="btn_sty">Set Weekly Goal</a>';
+      $usergoal_data='<a href="'.$CFG->wwwroot.'/blocks/skill_list/set_weekly_goals.php" class="btn_sty btn">Set Weekly Goal</a>';
     }
     $weekly_data=$this->get_weekly_data();
     $get_total_weekly_hour=$this->get_total_weekly_data();
@@ -204,11 +275,11 @@ for ($i = $monday; $i <= $sunday;) {
 
       var options = {
         title: "Weekly Goal Chart",
-        width: 400,
+        width: 350,
         height: 200,
-        bar: {groupWidth: "95%"},
+        bar: {groupWidth: "80%"},
         legend: { position: "none" },
-         backgroundColor: "#343a40",
+         backgroundColor: "transparent",
           legendTextStyle: { color: "#FFF" },
           titleTextStyle: { color: "#FFF" },
           hAxis: {
@@ -236,9 +307,11 @@ for ($i = $monday; $i <= $sunday;) {
 
         var options2 = {
           title: "Total Weekly Reports",
-           backgroundColor: "#343a40",
+           backgroundColor: "transparent",
           legendTextStyle: { color: "#FFF" },
           titleTextStyle: { color: "#FFF" },
+          width: "100%",
+          height: "100%",
           hAxis: {
           color:"#FFF",
           },
@@ -255,60 +328,37 @@ for ($i = $monday; $i <= $sunday;) {
 
   </script>
     <div class="container">
-                    <div class="card-body my_skill_body">
-                      <div class="row">
+                    <div class="card-body charts_bg">
+                      <div class="row set-alignment">
                         <div class="col-sm-6">
                           <div class="progressbar">
                             <div id="piechart"></div>
                           </div>
-                         
                         </div>
-                        <div class="col-sm-6 resposive_mt_20">
+                        <div class="col-sm-6 resposive_mt_20 flex_end">
                           <div class="graph">
                            <div id="columnchart_values" style=""></div>
                           </div>
-                         
                         </div>
+                        <div>
+                                <div class=" flex-center text-right pr-50">
+                                   '.$usergoal_data.'
+                                </div>
+                          </div>
                       </div> 
                     </div>
                     <div class="card-body my_skill_body mobile-text-center resposive_mt_20 ">
-                      <div class="row ">
-                          <div class="col-sm-6">
-                             <h3 class="my_skill text-white">My Skills</h3>
+                      <div class="">
+                          <div class="">
+                             <h3 class="my_skill text-white m-0 pt-3">My Skills</h3>
                           </div>
-                          <div class="col-sm-6  flex-center">
-                           '.$usergoal_data.'
-                          </div>
+                          
                         </div>
                       </div>
                       <div class="card-body my_skill_body">';
                       foreach ($siklls as $value) {
-                        $countSubSkill = 0;
-                        $sumOfPoint = 0;
-                        
-                        $subskills = $DB->get_records_sql("SELECT * FROM {sub_skill} where skill_id = $value->skill_id");
-                         $subSkillId = count($subskills);
-                        foreach ($subskills as $subskill) {
-                          $subskills = $DB->get_record_sql("SELECT * FROM {user_proficiency_level} where  userid = $USER->id AND type = 'subskill' AND skill_id = $subskill->id");
-                           if(count($subskills)>0){
-                              $countSubSkill++;
-                              $sumOfPoint = $sumOfPoint + $subskills->point;
-                           }
-                        }
-                           $avg = $sumOfPoint/$countSubSkill;
+                       
                              
-                              $youwidth ='';
-                              if($avg >= 40 && $avg <= 60){
-                                 $youwidth="w-25";
-                              }elseif($avg >= 60 && $avg <=80){
-                                 $youwidth="w-50";
-                              }elseif($avg >= 80 && $avg <= 100){
-                                 $youwidth="w-75";
-                              }elseif($avg >= 100 ){
-                                 $youwidth="w-100";
-                              }
-
-                             // echo $avg."average<br><br>";
                         $user_skill_data=$this->userskill($value->skill_id);
 
                         $cours_id = $DB->get_record_sql("SELECT {skill_weightage}.default_course FROM {skill_weightage} where {skill_weightage}.id = $value->skill_weightage_id");
@@ -332,15 +382,13 @@ for ($i = $monday; $i <= $sunday;) {
                           $quiz_attempt_data=$DB->get_record_sql($quiz_attempt_sql,array($USER->id,$quiz->quiz_id,'finished'));
                            if($quiz_attempt_data){
                               $quiz_completed++;
-
-                            // For Get user level
                               $grades = $DB->get_record_sql("SELECT * FROM {quiz_grades} WHERE quiz =? AND userid =?",array($quiz->quiz_id,$USER->id));
                               $quize_grades = round($grades->grade,2);
                               $quiz_grade_value = ($quize_grades*10);
                               $proficiency_level_data = $DB->get_records_sql("SELECT * FROM {proficiency_level}");
                                  foreach($proficiency_level_data as $proficiency_level_list){
 
-                                     if($quiz_grade_value <= $proficiency_level_list->maximum_range){
+                                    if($quiz_grade_value <= $proficiency_level_list->maximum_range){
                                      
                                       $user_proficiency_sub_skill_sql="SELECT * FROM {user_proficiency_level} WHERE type=? AND skill_id=? AND userid=?";//sub_skill_id
                                       $user_proficiency_sub_skill_data=$DB->get_record_sql($user_proficiency_sub_skill_sql,array("subskill",$quiz->sub_skill_id,$USER->id));
@@ -352,6 +400,9 @@ for ($i = $monday; $i <= $sunday;) {
                                           $subkill_obj->point=$quiz_grade_value;
                                           $subkill_obj->createddate=time();
                                           $subkill_obj->type="subskill";
+                                          $subkill_obj->after_atempt_proficiency = $proficiency_level_list->id;
+                                          $subkill_obj->after_atempt_point=$quiz_grade_value;
+
                                           $DB->insert_record("user_proficiency_level",$subkill_obj);
                                       }
                                        break;
@@ -447,46 +498,61 @@ for ($i = $monday; $i <= $sunday;) {
                                 }
                                 $course_id_sub_skill = $DB->get_record_sql("SELECT DISTINCT course_id FROM {assign_course_sub_skill} WHERE sub_skill_id = $key AND proficiency_id IN (".$ids.")");
                                 if ($course_id_sub_skill->course_id) {
-                                      //$this->enroll($course_id_sub_skill->course_id,$id,5); // call enroll sub skill to course
+                                     
                                 }
                               }
                            }
                            //echo  $avg."average<br><br>";
+                           $usersubskill_data=self::usersubskill_data($value->skill_id);//array("total_sub_skill"=>$subskilltotal,'total_user_get_quiz_subskill'=>$countSubSkill,'youwidth'=>$youwidth);
+                           $youwidth=$usersubskill_data['youwidth'];
 
-                           if($total_quiz==$quiz_completed && $subSkillId==$countSubSkill){
-                             
-                              $text_url=$CFG->wwwroot.'/blocks/skill_list/skilling_path.php?skill_id='.$value->skill_id;
+                           if($usersubskill_data['total_sub_skill']==$usersubskill_data['total_user_get_quiz_subskill']){
+                            $start_course_id=self::user_start_course($value->skill_id);
+                            $start_course_url=$CFG->wwwroot.'/course/view.php?id='.$start_course_id;
+                            $text_url=$CFG->wwwroot.'/blocks/skill_list/skilling_path.php?skill_id='.$value->skill_id;
                               $text_name="View Skilling Path";
+                              $text_name2="";
                               $youAreHere = 'You are here';
                               $icon ='<i class="fa fa-caret-up" aria-hidden="true"></i>';
                               $display = "display:block";
+                               $display2 = "display:none";
+                               $display3 = "display:block";
 
                             }else{
                               $text_url=$CFG->wwwroot.'/course/view.php?id='.$cours_id->default_course;
-                              $text_name="Access Skills";
+                              $text_name="";
+                               $text_name2="Assess Skills";
                               $youAreHere = '';
                               $icon = '';
                               $display = "display:none";
+                              $display2 = "display:block";
+                               $display3 = "display:none";
+                               $start_course_url='#';
+
                             }
                             $htmlbody .='<div class="skill_box mobile-text-center">
-                                         <div class="row header ">
-                                            <div class="col-sm-4 skilltext" ><h5>'.$value->skill.' </h5>
+                                         <div class="dddd header  header_box22">
+                                            <div class=" skilltext" ><p>'.$value->skill.' </p>
                                             </div>
 
-                                            <div class="col-sm-5 skilltext" ><h5></h5>
-                                            </div> 
-                                            <div class="text_button col-sm-3">
-                                               <a href='.$text_url.' class="btn_sty">'.$text_name.'</a>
+                                            <!--<div class="col-sm-5 skilltext" ><h5></h5>
+                                            // </div> -->
+                                            <div class=" ">
+                                            <div class="text_button" style="'.$display2.'">
+                                               <a href='.$text_url.' class="btn_sty btn">'.$text_name2.'</a>
+                                               
+                                               </div>
+                                               <a  style="'.$display3.'" href="javascript:void(0);"class="expend_skills"><i class="fa fa-chevron-circle-up" aria-hidden="true"></i></a>
                                             </div>
                                          </div>
                                   
-                                 <div class="content">
+                                 <div class="content" data-id="true" style="'.$display.'">
                                   <div style="'.$display.'">
                                     <div class="d-flex aglin-items-center resposive_mt_20"> ';
                                     
                            $htmlbody .='<div class="A text-white '.$skill_with.' text-right ">
                                           <div class="align-top">
-                                             <span class="text-white text-center font-size-08"> Requied </span>
+                                             <span class="text-white text-center font-size-08"> Required </span>
                                           </div>
                                           <div class="flex-end">
                                              <i class="fa fa-caret-down text-white" aria-hidden="true"></i>
@@ -503,11 +569,11 @@ for ($i = $monday; $i <= $sunday;) {
                                         Knowledge <label id="k"> </label>
                                        </div>
 
-                                       <div class="progress-bar" role="progressbar" data-id="'.$value->skill_proficiency_label.'" style="width:25%;background:#57b0ff;padding-top: 6px;">
+                                       <div class="progress-bar" role="progressbar" data-id="'.$value->skill_proficiency_label.'" style="width:25%;background:#425f7a;padding-top: 6px;">
                                         Skilled <label id="s"> </label>
                                        </div>
 
-                                       <div class="progress-bar" role="progressbar" data-id="'.$value->skill_proficiency_label.'" style="width:25%;background:#8dc4f5;padding-top: 6px;">
+                                       <div class="progress-bar" role="progressbar" data-id="'.$value->skill_proficiency_label.'" style="width:25%;background:#5a4f92;padding-top: 6px;">
                                         Mastery <label id="m"> </label>
                                        </div>
                                     </div>
@@ -532,10 +598,10 @@ for ($i = $monday; $i <= $sunday;) {
                                     <span style="color:#fff;">'.$user_skill_data->point.'%</span>
                                     <div class="dddd">
                                           <div class="improve_btn">
-                                       <div class=""><a class="btn_sty improve" href="'.$text_url.'">'.$text_name.'</a></div>
+                                       <div class=""><a class="btn_sty improve btn" href="'.$text_url.'">'.$text_name.'</a></div>
                                     </div>
                                     <div class="improve_btn">
-                                       <div class="text_button"><a class="btn_sty improve" href="#">Start Course</a>
+                                       <div class="text_button"><a class="btn_sty btn improve" href="'.$start_course_url.'">Start Course</a>
                                        </div>
                                     </div>
                                  </div>
@@ -550,6 +616,14 @@ for ($i = $monday; $i <= $sunday;) {
                             </div><script src="https://use.fontawesome.com/47886b77a3.js"></script>
                             <style type="text/css">
                               /*5a4fd5*/
+                              .set-alignment{
+                                justify-content: flex-end;
+                              }
+                              .pr-50{
+                                padding-right: 50px;
+                              }
+
+                             
                               .container .content {
                                 display: none;
                                 padding : 5px;
@@ -563,6 +637,11 @@ for ($i = $monday; $i <= $sunday;) {
                                
                                .my_skill_body{
                                   background: #343a40;
+                                  border-radius: 0px;
+                               }
+                               .expend_skills{
+                                float: right;
+                                font-size: 20px;
                                }
 
                                .btn_sty{
@@ -570,30 +649,44 @@ for ($i = $monday; $i <= $sunday;) {
                                   border-radius: 30px;
                                   padding: 8px;
                                   border-color: purple;
-                                 /* border: 2px solid #c87ec8;*/
                                  border: 2px solid #5a4fd5;
                                   color: white;
-                                  width: 442px;
                                   padding: 10px 30px;
                                }
                                .btn_sty:hover{
                                   color: white;
                                   text-decoration: none;
                                }
+
+				                        .set_goals_head{
+				                        	color: #4abef7;
+				                        }
+
+                               
+
                                .skill_box{
                                   border: 1px solid gray;
-                                  padding: 30px;
+                                  padding: 20px;
                                   cursor: pointer;
                                }
 
-                               .my_skill{
+                               /*.my_skill{
                                   padding-left: 24px;
-                               }
+                               }*/
                                .progressbar{
                                   float: left;
                                   color: white;
 
                                }
+
+                               #piechart{
+                               position: absolute;
+                                 left: -6px;
+                             }
+
+                             #columnchart_values{
+                                  margin-top: 0px;
+                              }
                                .progressbar_text{
                                   float: left;
                                   color: white;
@@ -610,7 +703,7 @@ for ($i = $monday; $i <= $sunday;) {
                                   padding-left: 10px;
                                }
                                .progress{
-                                  height: 23px;
+                                  height: 10px;
 
                                }
                             .skilltext{
@@ -618,17 +711,18 @@ for ($i = $monday; $i <= $sunday;) {
                             }
 
                             .improve_btn{
-                            padding: 35px 0px;
+                            padding: 20px 0px;
                             }
                             .progress-t{
                                padding-top:10px ;
-                               padding-bottom: 10px;
+                               padding-bottom: 5px;
                             }
                             .progress-t span{
                                color: #fff;
                             }
                             .c-progress{
                                border-radius: 10px;
+                               margin-bottom: 5px;
                             }
                             .custom-progressbar{
                                background-color: #5a4fd5 !important;
@@ -640,12 +734,83 @@ for ($i = $monday; $i <= $sunday;) {
                             justify-content: space-between;
 
                             }
+
+                            .flex_end{
+                              display: flex;
+                              align-items: center;
+                              justify-content: flex-end;
+                            }
+
+                            .charts_bg{
+                              background: #343a40;
+                            }
+
+                            .skilltext p{
+                                margin: 0px;
+                            }
+
+
+                            @media(max-width: 568px){
+                              .btn_sty{
+                                padding: 5px !important;
+                                font-size:11px;
+                              }
+                             .set_goals_head{
+				                        	font-size: 11px;
+				                      }
+                              .header_box22{
+                                flex-wrap: nowrap;
+                              }
+
+                            
+                              [aria-label="A chart."]{
+                                left: -54px !important; 
+                              }
+
+                              .flex_end{
+                                display: block;
+                              }
+                            
+                              #columnchart_values{
+                              margin-top: 150px;
+                            }
+                            .set-alignment{
+                              justify-content: center;
+                          }
+
+                          .pr-50{
+                            padding-right: 0px;
+                          }
+                        }
+
+                            
+
+
                             </style>
 
                             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
                             <script type="text/javascript">
                                 $(document).ready(function(){
+
+
+                                  $(".header_box22").on("click",function(){
+                                   
+                                    var data_id=$(this).parent().children(".content").attr("data-id");
+                                  var $this=$(this);
+
+                                    if(data_id=="true"){
+                                     $this.find("i").removeClass("fa-chevron-circle-up");
+                                      $this.find("i").addClass("fa-chevron-circle-down");
+                                      $(this).parent().children(".content").attr("data-id","false");
+          
+                                  }else{
+                                    $(this).parent().children(".content").attr("data-id","true");
+                                    $this.find("i").removeClass("fa-chevron-circle-down");
+                                    $this.find("i").addClass("fa-chevron-circle-up");
+           
+                                  }
+                               });
 
                                     $(".header").click(function () {
                                         $header = $(this);

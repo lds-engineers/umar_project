@@ -99,13 +99,14 @@ class progressgoalnotifiation extends \core\task\scheduled_task {
 
         $currentDate=strtotime(date('d F Y'));
 
-
-        $today= date("l",$currentDate);
-        if($today=="Monday"){
+        $monday=strtotime("-7 day", $currentDate);
+        //$today= date("l",$currentDate);
+        /*if($today=="Monday"){
         $monday = strtotime("last monday");
         }else{
-            $monday = date('w', $monday)==date('w') ? $monday+7*86400 : $monday; 
-        }
+            $monday=strtotime("-7 day", $currentDate);
+           
+        }*/
 
     
     //$sunday = strtotime(date("Y-m-d",$monday)." +6 days");
@@ -133,10 +134,7 @@ class progressgoalnotifiation extends \core\task\scheduled_task {
     }
 
     return $data_arr;
-    /*echo "<pre>";
-    print_r($data_arr);
-    echo "</pre>";*/
-
+   
 
 }
     private function usergoal_set($userid){

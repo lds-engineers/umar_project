@@ -120,4 +120,8 @@ function theme_skills_update_settings_images($settingname) {
 function copyright(){
     return date('Y',time());
 }
+function logo_url(){
+    global $CFG;
+    return $CFG->themedir.'/skills/pix/Logo.svg';
+}
 
